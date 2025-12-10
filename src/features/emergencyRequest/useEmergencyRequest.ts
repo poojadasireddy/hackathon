@@ -123,9 +123,9 @@ export function useEmergencyRequest() {
                 return { success: true, name: device.name || "Unknown Device" };
             }
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Bluetooth Scan Error:", error);
-            // User cancelled or error
+            alert(`Bluetooth Error: ${error.message || error}`);
         } finally {
             setIsScanning(false);
         }
