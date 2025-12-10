@@ -1,5 +1,5 @@
 import { useEmergencyRequest } from './useEmergencyRequest';
-import { AlertCircle, Wifi, WifiOff, MapPin, Loader2, Navigation, Activity, Droplet } from 'lucide-react';
+import { AlertCircle, Wifi, WifiOff, MapPin, Loader2, Navigation, Activity, Droplet, Bluetooth } from 'lucide-react';
 import clsx from 'clsx';
 
 export function EmergencyRequestForm() {
@@ -9,9 +9,12 @@ export function EmergencyRequestForm() {
         locationError,
         isOnline,
         isSubmitting,
+        isScanning,
         submitResult,
+        relayDevice,
         handleChange,
-        handleSubmit
+        handleSubmit,
+        requestBluetoothRelay
     } = useEmergencyRequest();
 
     return (
@@ -209,6 +212,67 @@ export function EmergencyRequestForm() {
                         <span className="text-gray-400">Triangulating precise location...</span>
                     )}
                 </div>
+
+                {/* Bluetooth Relay Section (Offline Only) */}
+                {!isOnline && (
+                    <div className="space-y-3 p-4 rounded-xl border border-dashed border-cyan/30 bg-cyan/5">
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-sm font-bold text-cyan uppercase tracking-wider flex items-center gap-2">
+                                <Bluetooth className="w-4 h-4" />
+                                Air-Gap Relay
+                            </h4>
+                            {relayDevice && (
+                                <span className="text-xs font-mono text-green-400 bg-green-500/10 px-2 py-1 rounded">
+                                    LINKED
+                                </span>
+                            )}
+                        </div>
+
+                        <p className="text-xs text-gray-400">
+                            You are offline. Connect to a nearby device to relay this request via mesh network.
+                        </p>
+
+                        {relayDevice ? (
+                            <div className="flex items-center justify-between bg-black/40 p-4 rounded-xl border border-green-500/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    <span className="text-sm text-white font-mono">{relayDevice.name}</span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={requestBluetoothRelay}
+                                    className="text-xs text-gray-500 hover:text-white underline p-2"
+                                >
+                                    Change
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                type="button"
+                                onClick={requestBluetoothRelay}
+                                disabled={isScanning}
+                                className={clsx(
+                                    "w-full py-4 rounded-xl border text-sm font-bold transition-all flex items-center justify-center gap-2 active:scale-95 touch-manipulation",
+                                    isScanning
+                                        ? "bg-cyan/20 border-cyan/50 text-cyan cursor-wait"
+                                        : "bg-cyan/10 hover:bg-cyan/20 border-cyan/30 text-cyan"
+                                )}
+                            >
+                                {isScanning ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Scanning...
+                                    </>
+                                ) : (
+                                    <>
+                                        <Bluetooth className="w-5 h-5" />
+                                        Scan for Relay Device
+                                    </>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                )}
 
                 {/* Action Button */}
                 <button

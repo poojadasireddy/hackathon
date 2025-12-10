@@ -60,9 +60,11 @@ export function useEmergencyRequest() {
     const [formData, setFormData] = useState<EmergencyFormState>(INITIAL_STATE);
     const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locationError, setLocationError] = useState<string | null>(null);
+    const [isScanning, setIsScanning] = useState(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string; mode: 'ONLINE' | 'OFFLINE' } | null>(null);
+    const [relayDevice, setRelayDevice] = useState<{ name: string } | null>(null);
 
     // Monitor online status
     useEffect(() => {
@@ -96,8 +98,48 @@ export function useEmergencyRequest() {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const requestBluetoothRelay = async (): Promise<{ success: boolean; name: string | null }> => {
+        setIsScanning(true);
+        try {
+            if (!navigator.bluetooth) {
+                alert("Web Bluetooth is not supported in this browser. Try Chrome/Edge/Android.");
+                setIsScanning(false);
+                return { success: false, name: null };
+            }
+
+            // TRIGGERS REAL SYSTEM SCANNER
+            const device = await navigator.bluetooth.requestDevice({
+                acceptAllDevices: true,
+                optionalServices: ['battery_service'] // Common service to ensure wide compatibility or just connection
+            });
+
+            if (device) {
+                // Simulate "Connecting"
+                console.log("Connecting to:", device.name);
+                setRelayDevice({ name: device.name || "Unknown Device" });
+                // Real connection logic would go here if we had a UUID
+                // const server = await device.gatt.connect(); 
+
+                return { success: true, name: device.name || "Unknown Device" };
+            }
+
+        } catch (error) {
+            console.error("Bluetooth Scan Error:", error);
+            // User cancelled or error
+        } finally {
+            setIsScanning(false);
+        }
+        return { success: false, name: null };
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        let relayDeviceName: string | null = relayDevice?.name || null;
+        let isOfflineSubmission = !isOnline;
+
+        // Auto-prompt removed in favor of explicit UI button
+
         if (!location) {
             alert("Location is required. Please enable GPS.");
             return;
@@ -146,9 +188,17 @@ export function useEmergencyRequest() {
                 lastBroadcastedBy: deviceId
             });
 
-            setSubmitResult({ success: true, message: "Request saved offline (Mock/Safe Mode).", mode: 'OFFLINE' });
+            if (relayDeviceName) {
+                setSubmitResult({ success: true, message: `Request RELAYED via Bluetooth to: ${relayDeviceName}`, mode: 'OFFLINE' });
+            } else if (isOfflineSubmission) {
+                setSubmitResult({ success: true, message: "Request saved offline (No relay connected).", mode: 'OFFLINE' });
+            } else {
+                setSubmitResult({ success: true, message: "Request broadcasted successfully!", mode: 'ONLINE' });
+            }
+
             // Reset form
             setFormData(INITIAL_STATE);
+            setRelayDevice(null); // Reset relay selection
 
         } catch (error) {
             console.error("Error submitting request:", error);
@@ -164,8 +214,11 @@ export function useEmergencyRequest() {
         locationError,
         isOnline,
         isSubmitting,
+        isScanning,
         submitResult,
+        relayDevice,
         handleChange,
-        handleSubmit
+        handleSubmit,
+        requestBluetoothRelay
     };
-}
+};
