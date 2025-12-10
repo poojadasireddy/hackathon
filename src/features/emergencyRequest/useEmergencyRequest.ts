@@ -3,10 +3,11 @@ import { useState, useEffect } from 'react';
 // import { db } from '../../lib/firebase';
 // import { enqueueRequest } from '../../lib/offlineStore';
 import type { EmergencyRequest, BloodType, ComponentType, UrgencyLevel } from '../../types/emergency';
+import type { PendingRequest } from '../../lib/offlineStore';
 
 // MOCK LOCAL STORE TO AVOID CRASH FOR NOW
 // We will re-enable strict typing later. For now, ensure it doesn't crash.
-const enqueueRequest = async (data: any) => {
+const enqueueRequest = async (data: PendingRequest) => {
     console.log("Mock enqueue:", data);
     return "mock-id";
 };
@@ -17,7 +18,7 @@ function generateUUID() {
         return crypto.randomUUID();
     }
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
         return v.toString(16);
     });
 }

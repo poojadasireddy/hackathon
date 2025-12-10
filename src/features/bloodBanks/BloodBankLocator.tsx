@@ -1,7 +1,6 @@
-import { Phone, Clock, MapPin, CloudOff } from 'lucide-react';
+import { Phone, Clock, CloudOff, Navigation } from 'lucide-react';
 import { useBloodBanks } from './useBloodBanks';
 import { BloodBankMap } from './BloodBankMap';
-import clsx from 'clsx';
 
 interface Props {
     userLat?: number;
@@ -11,60 +10,77 @@ interface Props {
 export function BloodBankLocator({ userLat, userLng }: Props) {
     const { banks, loading, isOfflineMode } = useBloodBanks(userLat, userLng);
 
-    if (loading) return <div className="p-4 text-center">Loading Blood Banks...</div>;
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center p-12 text-cyan animate-pulse">
+            <div className="w-12 h-12 border-4 border-cyan border-t-transparent rounded-full animate-spin mb-4" />
+            <span className="tracking-widest uppercase text-sm">Scanning Network...</span>
+        </div>
+    );
 
     return (
-        <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-red-600" />
-                    Nearby Blood Banks
-                </h3>
+        <div className="max-w-3xl mx-auto space-y-6">
+            <div className="flex justify-between items-end">
+                <div>
+                    <h2 className="text-3xl font-bold text-white text-glow flex items-center gap-3">
+                        <Navigation className="w-8 h-8 text-cyan animate-float" />
+                        Blood Bank Locator
+                    </h2>
+                    <p className="text-gray-400 text-sm tracking-wide mt-2">
+                        NEARBY DONATION CENTERS
+                    </p>
+                </div>
                 {isOfflineMode && (
-                    <span className="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded flex items-center gap-1">
-                        <CloudOff className="w-3 h-3" /> Offline Mode
+                    <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1 rounded-full flex items-center gap-2 border border-gray-700">
+                        <CloudOff className="w-3 h-3" /> Offline Cache
                     </span>
                 )}
             </div>
 
-            <div className="p-4">
-                <BloodBankMap banks={banks} userLat={userLat} userLng={userLng} />
-            </div>
+            <div className="glass-card rounded-2xl overflow-hidden border border-glass-border shadow-neon-blue">
+                <div className="p-1 bg-surface/50">
+                    <BloodBankMap banks={banks} userLat={userLat} userLng={userLng} />
+                </div>
 
-            <div className="divide-y divide-gray-100 max-h-64 overflow-y-auto">
-                {banks.length === 0 ? (
-                    <p className="p-4 text-center text-gray-500 text-sm">No blood banks found nearby.</p>
-                ) : (
-                    banks.map(bank => (
-                        <div key={bank.id} className="p-4 hover:bg-gray-50 transition-colors">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h4 className="font-semibold text-gray-900">{bank.name}</h4>
-                                    <p className="text-xs text-gray-500 mt-1">{bank.address}</p>
-                                    <div className="flex items-center gap-3 mt-2 text-xs text-gray-600">
-                                        {bank.distance !== undefined && (
-                                            <span className="font-medium text-blue-600">
-                                                {bank.distance.toFixed(1)} km away
-                                            </span>
-                                        )}
-                                        {bank.is24x7 && (
-                                            <span className="flex items-center gap-1 text-green-600 bg-green-50 px-1.5 py-0.5 rounded">
-                                                <Clock className="w-3 h-3" /> 24x7
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <a
-                                    href={`tel:${bank.contactPhone}`}
-                                    className="p-2 bg-green-100 text-green-700 rounded-full hover:bg-green-200"
-                                    title="Call Now"
-                                >
-                                    <Phone className="w-4 h-4" />
-                                </a>
-                            </div>
+                <div className="divide-y divide-white/5 max-h-[500px] overflow-y-auto bg-surface/80">
+                    {banks.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                            <CloudOff className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                            <p className="text-sm uppercase tracking-widest">No blood banks detected in range.</p>
                         </div>
-                    ))
-                )}
+                    ) : (
+                        banks.map(bank => (
+                            <div key={bank.id} className="p-5 hover:bg-white/5 transition-colors group">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h4 className="font-bold text-white text-lg group-hover:text-cyan transition-colors">{bank.name}</h4>
+                                        <p className="text-sm text-gray-400 mt-1">{bank.address}</p>
+
+                                        <div className="flex items-center gap-4 mt-3 text-xs">
+                                            {bank.distance !== undefined && (
+                                                <span className="font-mono text-cyan bg-cyan/10 px-2 py-1 rounded border border-cyan/20">
+                                                    {bank.distance.toFixed(1)} KM
+                                                </span>
+                                            )}
+                                            {bank.is24x7 && (
+                                                <span className="flex items-center gap-1 text-green-400 bg-green-500/10 px-2 py-1 rounded border border-green-500/20">
+                                                    <Clock className="w-3 h-3" /> 24x7 Active
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <a
+                                        href={`tel:${bank.contactPhone}`}
+                                        className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500/20 border border-green-500/20 transition-all hover:scale-105 active:scale-95"
+                                        title="Call Now"
+                                    >
+                                        <Phone className="w-5 h-5" />
+                                    </a>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
             </div>
         </div>
     );

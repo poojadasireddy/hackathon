@@ -1,14 +1,13 @@
 import { useState, useCallback } from 'react';
-// import { db } from '../../lib/firebase'; // For online sync check if needed, though mostly we use offlineStore
 import {
     getPendingRequests,
     enqueueRequest,
     logSyncEvent,
     getRequestsToSync,
-    markRequestSynced,
-    PendingRequest
+    markRequestSynced
 } from '../../lib/offlineStore';
-// import { EmergencyRequest } from '../../types/emergency';
+import type { PendingRequest } from '../../lib/offlineStore';
+import type { EmergencyRequest } from '../../types/emergency';
 import { compressRequest, parsePayload } from './qrUtils';
 // import { collection, addDoc } from 'firebase/firestore';
 
@@ -42,10 +41,10 @@ export function useRelay() {
     const generateBroadcastPayload = (req: PendingRequest): string => {
         // Convert PendingRequest (Dexie) to EmergencyRequest (Type) for compression tool
         // They are almost identical structure-wise for these fields
-        const emergencyReq: any = {
+        const emergencyReq = {
             ...req,
             location: { lat: req.lat, lng: req.lng }
-        };
+        } as unknown as EmergencyRequest;
 
         // Log intent
         logSyncEvent(req.id, deviceId, 'rebroadcast');
@@ -126,7 +125,7 @@ export function useRelay() {
 
                 // Simulate success for demo
                 await markRequestSynced(req.id);
-                await logSyncEvent(req.id, deviceId, 'synced-simulated');
+                await logSyncEvent(req.id, deviceId, 'synced');
                 syncedCount++;
             } catch (e) {
                 console.error("Sync failed for", req.id, e);

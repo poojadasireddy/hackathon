@@ -1,7 +1,8 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { BloodBank } from './useBloodBanks'; // Interface
+import type { BloodBank } from './useBloodBanks'; // Interface
 import { Icon } from 'leaflet';
+import { useEffect } from 'react';
 import markerIconPng from "leaflet/dist/images/marker-icon.png"
 import markerIconShadow from "leaflet/dist/images/marker-shadow.png"
 
@@ -36,8 +37,8 @@ export function BloodBankMap({ banks, userLat, userLng }: Props) {
         <div className="h-64 md:h-80 w-full rounded-xl overflow-hidden shadow-inner border border-gray-200 relative z-0">
             <MapContainer center={[centerLat, centerLng]} zoom={13} scrollWheelZoom={false} style={{ height: '100%', width: '100%' }}>
                 <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
                 />
 
                 {userLat && userLng && (

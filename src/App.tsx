@@ -7,7 +7,7 @@ import { useState, lazy, Suspense } from 'react';
 const EmergencyRequestForm = lazy(() => import('./features/emergencyRequest/EmergencyRequestForm').then(module => ({ default: module.EmergencyRequestForm })));
 const BloodBankLocator = lazy(() => import('./features/bloodBanks/BloodBankLocator').then(module => ({ default: module.BloodBankLocator })));
 
-function NavItem({ to, icon: Icon, label }: { to: string, icon: any, label: string }) {
+function NavItem({ to, icon: Icon }: { to: string, icon: React.ElementType }) {
   const location = useLocation();
   const isActive = location.pathname === to;
 
@@ -92,8 +92,8 @@ function App() {
 
         {/* Floating Bottom Nav (Mobile) */}
         <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass-card px-6 py-3 rounded-full flex items-center gap-8 md:hidden">
-          <NavItem to="/" icon={Activity} label="Request" />
-          <NavItem to="/banks" icon={MapIcon} label="Locator" />
+          <NavItem to="/" icon={Activity} />
+          <NavItem to="/banks" icon={MapIcon} />
         </nav>
       </div>
     </Router>

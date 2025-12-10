@@ -1,4 +1,4 @@
-import type { EmergencyRequest } from "../../types/emergency";
+import type { EmergencyRequest, BloodType, ComponentType, UrgencyLevel } from "../../types/emergency";
 
 /**
  * Minimized payload structure for QR codes to keep size manageable.
@@ -44,11 +44,11 @@ export function parsePayload(jsonStr: string): Partial<EmergencyRequest> | null 
         const p = JSON.parse(jsonStr) as CompactRequestPayload;
 
         // Map back shortened values
-        let componentType: any = 'WHOLE_BLOOD';
+        let componentType: ComponentType = 'WHOLE_BLOOD';
         if (p.ct === 'pl') componentType = 'PLATELETS';
         if (p.ct === 'pa') componentType = 'PLASMA';
 
-        let urgency: any = 'LOW';
+        let urgency: UrgencyLevel = 'LOW';
         if (p.urg === 'c') urgency = 'CRITICAL';
         if (p.urg === 'h') urgency = 'HIGH';
         if (p.urg === 'm') urgency = 'MEDIUM';
@@ -58,7 +58,7 @@ export function parsePayload(jsonStr: string): Partial<EmergencyRequest> | null 
             // For a relayed request, the originRequestId is crucial for deduplication
             // We'll treat p.oi as the ground truth for origin
             originDeviceId: p.od,
-            bloodType: p.bt as any,
+            bloodType: p.bt as BloodType,
             componentType,
             units: p.u,
             urgency,
