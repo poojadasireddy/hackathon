@@ -1,28 +1,21 @@
-// import { useEmergencyRequest } from './useEmergencyRequest';
+import { useEmergencyRequest } from './useEmergencyRequest';
 import { AlertCircle, Wifi, WifiOff, MapPin, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 
 export function EmergencyRequestForm() {
-    // const {
-    //     formData,
-    //     location,
-    //     locationError,
-    //     isOnline,
-    //     isSubmitting,
-    //     submitResult,
-    //     handleChange,
-    //     handleSubmit
-    // } = useEmergencyRequest();
+    const {
+        formData,
+        location,
+        locationError,
+        isOnline,
+        isSubmitting,
+        submitResult,
+        handleChange,
+        handleSubmit
+    } = useEmergencyRequest();
 
-    // DUMMIES TO TEST RENDER
-    const formData = { bloodType: 'O+', componentType: 'WHOLE_BLOOD', units: 1, urgency: 'HIGH', patientName: '', contactName: '', contactPhone: '', notes: '' };
-    const location = { lat: 12.9, lng: 77.5 };
-    const locationError = null;
-    const isOnline = true;
-    const isSubmitting = false;
-    const submitResult = null;
-    const handleChange = () => { };
-    const handleSubmit = (e) => e.preventDefault();
+    // DUMMIES REMOVED
+    // const formData = ...
 
     return (
         <div className="max-w-2xl mx-auto p-4 md:p-6 bg-white rounded-xl shadow-lg border border-gray-100">

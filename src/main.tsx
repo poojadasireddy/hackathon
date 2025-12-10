@@ -1,5 +1,6 @@
-import { StrictMode, Component, ErrorInfo, ReactNode } from 'react'
+import { StrictMode, Component, type ErrorInfo, type ReactNode } from 'react'
 import { createRoot } from 'react-dom/client'
+console.log("🚀 Main entry point loaded - JS is running");
 import './index.css'
 import App from './App.tsx'
 
