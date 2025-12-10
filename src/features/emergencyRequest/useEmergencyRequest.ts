@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+// import { collection, addDoc, Timestamp } from 'firebase/firestore';
+// import { db } from '../../lib/firebase';
 import { enqueueRequest } from '../../lib/offlineStore';
-import { EmergencyRequest, BloodType, ComponentType, UrgencyLevel, RequestStatus } from '../../types/emergency';
+import { EmergencyRequest, BloodType, ComponentType, UrgencyLevel } from '../../types/emergency';
 
-
-// Simple UUID generator if uuid package not installed
+// Simple UUID generator fallback
 function generateUUID() {
-    return crypto.randomUUID();
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+    }
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
 }
 
 // Helper to get or create a persistent device ID
@@ -119,38 +124,20 @@ export function useEmergencyRequest() {
         };
 
         try {
-            if (isOnline) {
-                // ONLINE FLOW
-                await addDoc(collection(db, 'requests'), {
-                    ...requestData,
-                    // Firestore compatible timestamp if needed, or just kept as number for consistency
-                    // createdAt: Timestamp.fromMillis(timestamp) 
-                });
+            // FORCE OFFLINE FOR DEBUGGING - BYPASS FIREBASE IMPORTS
+            // We use standard try-catch but only execute offline logic
 
-                // Backup to Dexie as synced
-                await enqueueRequest({
-                    ...requestData,
-                    originRequestId: requestData.id,
-                    lat: location.lat,
-                    lng: location.lng,
-                    status: 'synced',
-                    lastBroadcastedBy: deviceId // Self
-                });
+            // OFFLINE FLOW
+            await enqueueRequest({
+                ...requestData,
+                originRequestId: requestData.id,
+                lat: location.lat,
+                lng: location.lng,
+                status: 'pending_sync',
+                lastBroadcastedBy: deviceId
+            });
 
-                setSubmitResult({ success: true, message: "Request successfully sent to nearby donors!", mode: 'ONLINE' });
-            } else {
-                // OFFLINE FLOW
-                await enqueueRequest({
-                    ...requestData,
-                    originRequestId: requestData.id,
-                    lat: location.lat,
-                    lng: location.lng,
-                    status: 'pending_sync',
-                    lastBroadcastedBy: deviceId
-                });
-
-                setSubmitResult({ success: true, message: "Request saved offline. Will sync when internet is available.", mode: 'OFFLINE' });
-            }
+            setSubmitResult({ success: true, message: "Request saved offline. Will sync when internet is available.", mode: 'OFFLINE' });
 
             // Reset form
             setFormData(INITIAL_STATE);

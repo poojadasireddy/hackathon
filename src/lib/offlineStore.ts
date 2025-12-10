@@ -9,9 +9,9 @@ export interface PendingRequest {
     hopCount: number;
     maxHops: number;
     bloodType: string;
-    componentType: 'whole_blood' | 'platelets';
+    componentType: string; // 'WHOLE_BLOOD' etc.
     units: number | string;
-    urgency: 'HIGH' | 'MEDIUM' | 'LOW';
+    urgency: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
     contactName: string;
     contactPhone: string;
     lat: number;

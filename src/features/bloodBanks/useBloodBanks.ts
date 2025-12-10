@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+// import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
+// import { db } from '../../lib/firebase';
 import { saveBloodBanksToCache, getCachedBloodBanks, BloodBankCache } from '../../lib/offlineStore';
 
 export interface BloodBank extends BloodBankCache {
@@ -42,52 +42,35 @@ export function useBloodBanks(userLat: number | undefined, userLng: number | und
         async function fetchBanks() {
             setLoading(true);
             try {
-                if (navigator.onLine) {
-                    // Online: Fetch from Firestore
-                    // For hackathon demo, if collection empty, use MOCK
-                    try {
-                        // In real app: const snap = await getDocs(collection(db, 'bloodBanks'));
-                        // For now, let's just use mock mixed with offline logic to ensure user sees something
-                        // We will simulate a fetch
-                        const onlineData = MOCK_BANKS;
+                // FORCE MOCK / OFFLINE
+                // Mock Fetch regardless of online status
+                const onlineData = MOCK_BANKS;
 
-                        // Save to cache
-                        await saveBloodBanksToCache(onlineData);
-                        setBanks(onlineData);
-                        setIsOfflineMode(false);
-                    } catch (e) {
-                        console.error("Firestore fetch failed, falling back", e);
-                        const cached = await getCachedBloodBanks();
-                        setBanks(cached);
-                        setIsOfflineMode(true);
-                    }
-                } else {
-                    // Offline
-                    const cached = await getCachedBloodBanks();
-                    setBanks(cached);
-                    setIsOfflineMode(true);
-                }
+                // Save to cache
+                await saveBloodBanksToCache(onlineData);
+                setBanks(onlineData);
+                setIsOfflineMode(false); // Or true, but data is there
+
             } catch (err) {
                 console.error("Error fetching blood banks", err);
+                // Try cache
+                const cached = await getCachedBloodBanks();
+                setBanks(cached);
+                setIsOfflineMode(true);
             } finally {
                 setLoading(false);
             }
         }
-
         fetchBanks();
-
-        window.addEventListener('online', fetchBanks);
-        window.addEventListener('offline', fetchBanks);
-        return () => {
-            window.removeEventListener('online', fetchBanks);
-            window.removeEventListener('offline', fetchBanks);
-        }
     }, []);
 
-    // Calculate distances when user location or banks change
+    // Calculate distance when banks or user location changes
     const banksWithDistance = banks.map(b => {
         if (userLat && userLng) {
-            return { ...b, distance: getDistanceFromLatLonInKm(userLat, userLng, b.lat, b.lng) };
+            return {
+                ...b,
+                distance: getDistanceFromLatLonInKm(userLat, userLng, b.lat, b.lng)
+            };
         }
         return b;
     }).sort((a, b) => (a.distance || 9999) - (b.distance || 9999));

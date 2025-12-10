@@ -1,17 +1,9 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+// FIREBASE MOCKED FOR DEBUGGING
+// If the app loads now, the issue was definitely the Firebase SDK initialization or config.
 
-const firebaseConfig = {
-    apiKey: "AIzaSyA858RWfPAav4JbgP0HYnUy7c7SmA4JRIk",
-    authDomain: "dracula-70cc8.firebaseapp.com",
-    projectId: "dracula-70cc8",
-    storageBucket: "dracula-70cc8.firebasestorage.app",
-    messagingSenderId: "109861973774",
-    appId: "1:109861973774:web:1a8e2610744c82f387f15f",
-    measurementId: "G-STHQJEVX73"
-};
+console.log("Mocking Firebase for debugging...");
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app);
-export const auth = getAuth(app);
+const db = null;
+const auth = null;
+
+export { db, auth };

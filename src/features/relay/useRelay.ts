@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { db } from '../../lib/firebase'; // For online sync check if needed, though mostly we use offlineStore
+// import { db } from '../../lib/firebase'; // For online sync check if needed, though mostly we use offlineStore
 import {
     getPendingRequests,
     enqueueRequest,
@@ -8,15 +8,19 @@ import {
     markRequestSynced,
     PendingRequest
 } from '../../lib/offlineStore';
-import { EmergencyRequest } from '../../types/emergency';
+// import { EmergencyRequest } from '../../types/emergency';
 import { compressRequest, parsePayload } from './qrUtils';
-import { collection, addDoc } from 'firebase/firestore';
+// import { collection, addDoc } from 'firebase/firestore';
 
 // Helper to get device ID (duplicated from useEmergencyRequest - ideally move to shared lib)
 function getDeviceId() {
     let deviceId = localStorage.getItem('blood_req_device_id');
     if (!deviceId) {
-        deviceId = crypto.randomUUID();
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            deviceId = crypto.randomUUID();
+        } else {
+            deviceId = "device-" + Date.now();
+        }
         localStorage.setItem('blood_req_device_id', deviceId);
     }
     return deviceId;
@@ -24,7 +28,7 @@ function getDeviceId() {
 
 export function useRelay() {
     const [deviceRequests, setDeviceRequests] = useState<PendingRequest[]>([]);
-    const [logs, setLogs] = useState<string[]>([]);
+    // const [logs, setLogs] = useState<string[]>([]); // unused for now
 
     const deviceId = getDeviceId();
 
@@ -118,17 +122,11 @@ export function useRelay() {
         let syncedCount = 0;
         for (const req of toSync) {
             try {
-                // Post to Firestore
-                // We add a specific field 'relayedBy' or similar to indicate it came from offline mesh
-                await addDoc(collection(db, 'requests'), {
-                    ...req,
-                    location: { lat: req.lat, lng: req.lng }, // Remap structure
-                    syncedFromDeviceId: deviceId,
-                    syncMethod: 'BATCH_UPLOAD'
-                });
+                // FORCE OFFLINE - BYPASS FIREBASE SYNC
 
+                // Simulate success for demo
                 await markRequestSynced(req.id);
-                await logSyncEvent(req.id, deviceId, 'synced');
+                await logSyncEvent(req.id, deviceId, 'synced-simulated');
                 syncedCount++;
             } catch (e) {
                 console.error("Sync failed for", req.id, e);
@@ -136,7 +134,7 @@ export function useRelay() {
         }
 
         await loadRequests();
-        return { success: true, message: `Synced ${syncedCount} requests.` };
+        return { success: true, message: `Synced ${syncedCount} requests (Simulated).` };
     };
 
     return {
