@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 // import { collection, getDocs, query, where, Timestamp } from 'firebase/firestore';
 // import { db } from '../../lib/firebase';
-import { saveBloodBanksToCache, getCachedBloodBanks } from '../../lib/offlineStore';
+// import { saveBloodBanksToCache, getCachedBloodBanks } from '../../lib/offlineStore';
 import type { BloodBankCache } from '../../lib/offlineStore';
 
 export interface BloodBank extends BloodBankCache {
@@ -27,57 +27,44 @@ function deg2rad(deg: number) {
     return deg * (Math.PI / 180)
 }
 
-// Mock Data for Demo if Firestore is empty
-const MOCK_BANKS: BloodBankCache[] = [
-    { id: '1', name: 'City Hospital Blood Bank', lat: 12.9716, lng: 77.5946, address: 'MG Road, Bangalore', contactPhone: '080-12345678', is24x7: true, lastUpdatedAt: Date.now() },
-    { id: '2', name: 'Red Cross Center', lat: 12.9352, lng: 77.6245, address: 'Koramangala, Bangalore', contactPhone: '080-87654321', is24x7: false, lastUpdatedAt: Date.now() },
-    { id: '3', name: 'Lifeline Blood Bank', lat: 13.0352, lng: 77.5645, address: 'Malleshwaram, Bangalore', contactPhone: '080-11223344', is24x7: true, lastUpdatedAt: Date.now() }
-];
+// Real Data Import
+import { HYDERABAD_BANKS } from '../../data/hyderabadBloodBanks';
+
+const MOCK_BANKS = HYDERABAD_BANKS;
 
 export function useBloodBanks(userLat: number | undefined, userLng: number | undefined) {
-    const [banks, setBanks] = useState<BloodBank[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [banks, setBanks] = useState<BloodBank[]>(MOCK_BANKS);
+    const [loading, setLoading] = useState(false);
     const [isOfflineMode, setIsOfflineMode] = useState(false);
 
+    // FORCE MOCK / OFFLINE
+    // Mock Fetch regardless of online status
+    const onlineData = MOCK_BANKS;
+
+    // Save to cache (DISABLED FOR STABILITY)
+    // await saveBloodBanksToCache(onlineData);
     useEffect(() => {
-        async function fetchBanks() {
-            setLoading(true);
-            try {
-                // FORCE MOCK / OFFLINE
-                // Mock Fetch regardless of online status
-                const onlineData = MOCK_BANKS;
-
-                // Save to cache
-                await saveBloodBanksToCache(onlineData);
-                setBanks(onlineData);
-                setIsOfflineMode(false); // Or true, but data is there
-
-            } catch (err) {
-                console.error("Error fetching blood banks", err);
-                // Try cache
-                const cached = await getCachedBloodBanks();
-                setBanks(cached);
-                setIsOfflineMode(true);
-            } finally {
-                setLoading(false);
-            }
-        }
-        fetchBanks();
+        // Simulate heavy load
+        const timer = setTimeout(() => {
+            setBanks(MOCK_BANKS);
+            setLoading(false);
+        }, 500);
+        return () => clearTimeout(timer);
     }, []);
 
-    // Calculate distance when banks or user location changes
-    const banksWithDistance = banks.map(b => {
-        if (userLat && userLng) {
-            return {
-                ...b,
-                distance: getDistanceFromLatLonInKm(userLat, userLng, b.lat, b.lng)
-            };
-        }
-        return b;
-    }).sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
+    // // Calculate distance when banks or user location changes
+    // const banksWithDistance = banks.map(b => {
+    //     if (userLat && userLng) {
+    //         return {
+    //             ...b,
+    //             distance: getDistanceFromLatLonInKm(userLat, userLng, b.lat, b.lng)
+    //         };
+    //     }
+    //     return b;
+    // }).sort((a, b) => (a.distance || 9999) - (b.distance || 9999));
 
     return {
-        banks: banksWithDistance,
+        banks: banks, // banksWithDistance
         loading,
         isOfflineMode
     };

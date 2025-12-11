@@ -290,6 +290,11 @@ export function EmergencyRequestForm() {
                             <Loader2 className="w-5 h-5 animate-spin" />
                             Broadcasting...
                         </>
+                    ) : !location ? (
+                        <>
+                            <MapPin className="w-5 h-5 animate-bounce" />
+                            Waiting for Location...
+                        </>
                     ) : (
                         <>
                             <Activity className="w-5 h-5" />

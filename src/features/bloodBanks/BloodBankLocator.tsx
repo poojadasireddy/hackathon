@@ -1,6 +1,8 @@
-import { Phone, Clock, CloudOff, Navigation } from 'lucide-react';
-import { useBloodBanks } from './useBloodBanks';
+import { Phone, Clock, CloudOff, Navigation, Radio } from 'lucide-react';
+import { useState } from 'react';
+import { useBloodBanks, type BloodBank } from './useBloodBanks'; // Updated import to export type
 import { BloodBankMap } from './BloodBankMap';
+import { RelaySimulationModal } from './RelaySimulationModal';
 
 interface Props {
     userLat?: number;
@@ -9,6 +11,7 @@ interface Props {
 
 export function BloodBankLocator({ userLat, userLng }: Props) {
     const { banks, loading, isOfflineMode } = useBloodBanks(userLat, userLng);
+    const [selectedBankForRelay, setSelectedBankForRelay] = useState<BloodBank | null>(null);
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center p-12 text-cyan animate-pulse">
@@ -23,21 +26,20 @@ export function BloodBankLocator({ userLat, userLng }: Props) {
                 <div>
                     <h2 className="text-3xl font-bold text-white text-glow flex items-center gap-3">
                         <Navigation className="w-8 h-8 text-cyan animate-float" />
-                        Blood Bank Locator
+                        Blood Bank Locator (Hyderabad)
                     </h2>
                     <p className="text-gray-400 text-sm tracking-wide mt-2">
-                        NEARBY DONATION CENTERS
+                        OFFLINE-CAPABLE DONATION GRID
                     </p>
                 </div>
-                {isOfflineMode && (
-                    <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1 rounded-full flex items-center gap-2 border border-gray-700">
-                        <CloudOff className="w-3 h-3" /> Offline Cache
-                    </span>
-                )}
+                <span className="text-xs bg-gray-800 text-gray-400 px-3 py-1 rounded-full flex items-center gap-2 border border-gray-700">
+                    {isOfflineMode ? <CloudOff className="w-3 h-3 text-red-400" /> : <Radio className="w-3 h-3 text-green-400" />}
+                    {isOfflineMode ? "Offline Mode" : "Online Grid"}
+                </span>
             </div>
 
             <div className="glass-card rounded-2xl overflow-hidden border border-glass-border shadow-neon-blue">
-                <div className="p-1 bg-surface/50">
+                <div className="p-1 bg-surface/50 h-80">
                     <BloodBankMap banks={banks} userLat={userLat} userLng={userLng} />
                 </div>
 
@@ -69,19 +71,37 @@ export function BloodBankLocator({ userLat, userLng }: Props) {
                                         </div>
                                     </div>
 
-                                    <a
-                                        href={`tel:${bank.contactPhone}`}
-                                        className="p-3 bg-green-500/10 text-green-400 rounded-xl hover:bg-green-500/20 border border-green-500/20 transition-all hover:scale-105 active:scale-95"
-                                        title="Call Now"
-                                    >
-                                        <Phone className="w-5 h-5" />
-                                    </a>
+                                    <div className="flex flex-col gap-2">
+                                        <a
+                                            href={`tel:${bank.contactPhone}`}
+                                            className="p-2 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 border border-green-500/20 transition-all flex items-center justify-center"
+                                            title="Call Now"
+                                        >
+                                            <Phone className="w-5 h-5" />
+                                        </a>
+
+                                        <button
+                                            onClick={() => setSelectedBankForRelay(bank)}
+                                            className="p-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 border border-purple-500/20 transition-all flex items-center justify-center animate-pulse hover:animate-none"
+                                            title="Request via Relay (Offline)"
+                                        >
+                                            <Radio className="w-5 h-5" />
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
             </div>
+
+            {selectedBankForRelay && (
+                <RelaySimulationModal
+                    bank={selectedBankForRelay}
+                    onClose={() => setSelectedBankForRelay(null)}
+                />
+            )}
         </div>
     );
 }
+

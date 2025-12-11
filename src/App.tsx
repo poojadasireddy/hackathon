@@ -4,8 +4,11 @@ import clsx from 'clsx';
 import { useState, lazy, Suspense } from 'react';
 
 // Lazy load components to prevent top-level crashes from breaking the shell
+// Lazy load components to prevent top-level crashes from breaking the shell
 const EmergencyRequestForm = lazy(() => import('./features/emergencyRequest/EmergencyRequestForm').then(module => ({ default: module.EmergencyRequestForm })));
-const BloodBankLocator = lazy(() => import('./features/bloodBanks/BloodBankLocator').then(module => ({ default: module.BloodBankLocator })));
+// const BloodBankLocator = lazy(() => import('./features/bloodBanks/BloodBankLocator').then(module => ({ default: module.BloodBankLocator })));
+import { BloodBankLocator } from './features/bloodBanks/BloodBankLocator';
+import { UnifiedDashboard } from './features/dashboard/UnifiedDashboard';
 
 function NavItem({ to, icon: Icon }: { to: string, icon: React.ElementType }) {
   const location = useLocation();
@@ -84,8 +87,9 @@ function App() {
         <main className="relative z-10 pt-28 px-4 md:px-6 max-w-7xl mx-auto space-y-8">
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              <Route path="/" element={<EmergencyRequestForm />} />
-              <Route path="/banks" element={<BloodBankLocator />} />
+              <Route path="/" element={<UnifiedDashboard />} />
+              <Route path="/old-request" element={<EmergencyRequestForm />} />
+              <Route path="/locations" element={<BloodBankLocator />} />
             </Routes>
           </Suspense>
         </main>
@@ -93,7 +97,7 @@ function App() {
         {/* Floating Bottom Nav (Mobile) */}
         <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 glass-card px-6 py-3 rounded-full flex items-center gap-8 md:hidden">
           <NavItem to="/" icon={Activity} />
-          <NavItem to="/banks" icon={MapIcon} />
+          <NavItem to="/locations" icon={MapIcon} />
         </nav>
       </div>
     </Router>
